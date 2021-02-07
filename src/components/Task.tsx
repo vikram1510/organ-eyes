@@ -1,13 +1,13 @@
 import styled, { css } from 'styled-components';
-import { TaskResponse, updateTask } from '../api';
+import { deleteTask, TaskResponse, updateTask } from '../api';
 import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
 import { useContext, useRef, useState } from 'react';
 import { ListContext } from '../App';
 
 const hoverStyles = css`
     background-color: #f8ddaa;
     border: 2px solid #a5a5a5;
-    svg { visibility: visible;  } 
 `;
 
 const TaskWrapper = styled.div<{ isEdit: boolean }>`
@@ -17,13 +17,26 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
   margin: 16px 0;
   border-radius: 8px;
   cursor: pointer;
-
-  svg { visibility: ${({ isEdit }) => isEdit ? 'visible' : 'hidden'  }; }
-
   ${props => props.isEdit && hoverStyles}
+
+  svg { visibility: hidden }
 
   :hover  {
     ${hoverStyles}
+    svg { visibility: ${({ isEdit }) => isEdit ? 'hidden' : 'visible'  }; }
+  }
+
+  .task-icons {
+    display: flex;
+  }
+
+
+  svg {
+    padding: 4px;
+    border-radius: 8px;
+    :hover{
+      background-color: #fbc55f;
+    }
   }
 
   form {
@@ -52,14 +65,27 @@ export default function Task(props: TaskResponse & { listId: number }){
   const { lists, setLists } = useContext(ListContext);
 
   const [state, setState] = useState({ isEdit: false, text: props.name });
+
+  const setEdit = (val: boolean) => setState({ ...state, isEdit: val, text: props.name });
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
-    setState({ ...state, isEdit: true });
+    setEdit(true);
     if (inputRef.current){
       setTimeout(() => inputRef.current?.focus(), 10);
     }
   };
+
+  const handleDelete = () => {
+    deleteTask(props.id, () => {
+      setLists(lists.map(list => {
+        if (list.id === props.listId){
+          list.tasks = list.tasks.filter(task => task.id !== props.id);
+        }
+        return list;
+      }));
+    });
+  }; 
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -79,7 +105,6 @@ export default function Task(props: TaskResponse & { listId: number }){
 
   return (
     <TaskWrapper 
-      onClick={handleClick}
       isEdit={state.isEdit}
     >
       <form onSubmit={handleSubmit}>
@@ -88,8 +113,13 @@ export default function Task(props: TaskResponse & { listId: number }){
           value={state.text}
           ref={inputRef}
           onChange={e => setState({ ...state, text: e.target.value })}
-          onBlur={() => setState({ ...state, isEdit: false })}/>
-        <EditIcon />
+          onBlur={() => setEdit(false)}
+          onKeyDown={e => e.key === 'Escape' && setEdit(false)}
+          />
+          <div className='task-icons'>
+            <EditIcon className={'edit-icon'} onClick={handleClick}/>
+            <DeleteIcon className={'delete-icon'} onClick={handleDelete}/>
+          </div>
       </form>
     </TaskWrapper>
   );

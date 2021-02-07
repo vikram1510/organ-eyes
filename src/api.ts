@@ -7,7 +7,7 @@ export type TaskResponse = {
   name: string,
 }
 
-export type TaskCreate = TaskResponse & { list: number }
+export type TaskCreate = { name: string, list: number }
 export type TaskUpdate = Omit<TaskResponse, 'id'>
 
 export type ListResponse = {
@@ -28,3 +28,15 @@ export async function updateTask(id: number | string, body: TaskUpdate, callback
   if (callback) callback(res.data);
   return res.data;
 }
+
+export async function addTask(body: TaskCreate, callback?: ((res: TaskResponse) => void)){
+  const res = await axios.post<TaskResponse>(url + '/tasks', body);
+  if (callback) callback(res.data);
+  return res.data;
+}
+
+export async function deleteTask(id: number | string, callback?:() => void){
+  await axios.delete(url + `/tasks/${id}`);
+  if (callback) callback();
+}
+
