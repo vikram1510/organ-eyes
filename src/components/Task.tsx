@@ -16,7 +16,7 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
   padding: 12px;
   margin: 16px 0;
   border-radius: 8px;
-  cursor: pointer;
+  /* cursor: pointer; */
   ${props => props.isEdit && hoverStyles}
 
   svg { visibility: hidden }
@@ -30,8 +30,8 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
     display: flex;
   }
 
-
   svg {
+    cursor: pointer;
     padding: 4px;
     border-radius: 8px;
     :hover{
