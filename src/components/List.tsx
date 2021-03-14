@@ -1,11 +1,11 @@
-import { useContext, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { addTask, ListResponse } from '../api';
-import { ListContext } from '../App';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import Task from './Task';
+import { List as ListProps, useCreateTaskMutation } from '../graphql/generated';
+import FocusInput from './FocusInput';
 
-const ListWrapper = styled.div<{ isAdding: boolean }>`
+const ListWrapper = styled.div`
   padding: 16px;
   background-color: #c2c2c2;
   color: #3b3b3b;
@@ -24,64 +24,43 @@ const ListWrapper = styled.div<{ isAdding: boolean }>`
       background-color : #a5a5a5;
     }
   }
-
-  .add-form {
-    display: ${({ isAdding }) => isAdding ? 'block' : 'none'};
-  }
-
 `;
 
+export default function List(props: ListProps){
 
-export default function List(props: ListResponse){
-
-  const { lists, setLists } = useContext(ListContext);
   const [isAdding, setIsAdding] = useState(false);
   const [taskName, setTaskName] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [tasks, setTasks] = useState(props.tasks);
+  const [createTask, { data, loading }] = useCreateTaskMutation();
 
-  const handleClick = () => {
-    setIsAdding(true);
-    if (inputRef.current){
-      setTimeout(() => inputRef.current?.focus(), 10);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    addTask({ name: taskName, list: props.id }, (res) => {
-      setLists(lists.map(list => {
-        if (list.id === props.id) {
-          list.tasks = [...list.tasks, res];
-        }
-        return list;
-      }));
+  useEffect(() => {
+    if (data){
+      const { createTask: { id, name } } = data;
+      setTasks([...tasks, { id, name }]);
       setIsAdding(false);
       setTaskName('');
-    });
-  };
+    }
+  }, [data]);
 
   return (
-    <ListWrapper isAdding={isAdding}>
+    <ListWrapper >
       <div>
         <p>{props.name}</p>
       </div>
       <div>
-        {props.tasks.map(task => (
-          <Task key={task.id} {...task} listId={props.id}/>
-        ))}
-        <form className='add-form' onSubmit={handleSubmit}>
-          <input 
-            ref={inputRef} 
+        {tasks.map(task => <Task key={task.id} {...task}/>)}
+        {isAdding ? 
+        <form className='add-form' onSubmit={e => { e.preventDefault(); createTask({ variables: { task: { name: taskName, listId: props.id } } }); }}>
+          <FocusInput 
             value={taskName} 
             onChange={e => setTaskName(e.target.value)}
             onKeyDown={e => e.key === 'Escape' && setIsAdding(false)}/>
-        </form>
+        </form> : 
+        <div className='list-footer' onClick={() => setIsAdding(true)}>
+          <AddBoxIcon/>
+          <p>Add item</p>
+        </div>}
       </div>
-      <div className='list-footer' onClick={handleClick}>
-        <AddBoxIcon />
-        <p>Add item</p>
-      </div>
-      
     </ListWrapper>
   );
 

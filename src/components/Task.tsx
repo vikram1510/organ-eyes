@@ -1,9 +1,9 @@
 import styled, { css } from 'styled-components';
-import { deleteTask, TaskResponse, updateTask } from '../api';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { useContext, useRef, useState } from 'react';
-import { ListContext } from '../App';
+import React, { useEffect, useState } from 'react';
+import FocusInput from './FocusInput';
+import { Task as TaskProps, useUpdateTaskMutation } from '../graphql/generated';
 
 const hoverStyles = css`
     background-color: #f8ddaa;
@@ -16,7 +16,6 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
   padding: 12px;
   margin: 16px 0;
   border-radius: 8px;
-  /* cursor: pointer; */
   ${props => props.isEdit && hoverStyles}
 
   svg { visibility: hidden }
@@ -43,84 +42,48 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
     display: flex;
     justify-content: space-between;
 
-    p {
-      display: ${({ isEdit }) => isEdit ? 'none' : 'block'  };
-    }
-
-    input {
-      display: ${({ isEdit }) => isEdit ? 'block' : 'none'  };
-      background-color: #ffc250;
-      padding: 2px;
-      border: 0;
-      :focus {
-        outline: none;
-      }
-    }
   }
 `;
 
-export type TaskProps = { name: string, list: number }
+export default function Task(props: TaskProps){
 
-export default function Task(props: TaskResponse & { listId: number }){
-  const { lists, setLists } = useContext(ListContext);
-
-  const [state, setState] = useState({ isEdit: false, text: props.name });
-
-  const setEdit = (val: boolean) => setState({ ...state, isEdit: val, text: props.name });
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleClick = () => {
-    setEdit(true);
-    if (inputRef.current){
-      setTimeout(() => inputRef.current?.focus(), 10);
-    }
-  };
-
-  const handleDelete = () => {
-    deleteTask(props.id, () => {
-      setLists(lists.map(list => {
-        if (list.id === props.listId){
-          list.tasks = list.tasks.filter(task => task.id !== props.id);
-        }
-        return list;
-      }));
-    });
-  }; 
-
+  const [isEdit, setIsEdit] = useState(false);
+  const [text, setText] = useState(props.name);
+  const [updateTask, { data, error }] =  useUpdateTaskMutation();
+  
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    updateTask(props.id, { name: state.text }, (res) => {
-      setLists(lists.map(list => {
-        if (list.id === props.listId){
-          const task = list.tasks.find(task => task.id === props.id);
-          if (task){
-            task.name = state.text;
-          }
-        }
-        return list;
-      }));
-      setState({ ...state, isEdit: false, text: res.name });
-    });
+    if (text === props.name) {
+      setIsEdit(false);
+      return;
+    };
+    updateTask({ variables: {  taskId: props.id, task: { name: text } } });
   };
+  
+  useEffect(() => {
+    if (data){
+      setText(data.updateTask.name);
+      setIsEdit(false);
+    }
+    if (error){
+      console.log(error);
+    }
+  },[data, error]);
 
   return (
-    <TaskWrapper 
-      isEdit={state.isEdit}
-    >
-      <form onSubmit={handleSubmit}>
-        <p>{props.name}</p> 
-        <input 
-          value={state.text}
-          ref={inputRef}
-          onChange={e => setState({ ...state, text: e.target.value })}
-          onBlur={() => setEdit(false)}
-          onKeyDown={e => e.key === 'Escape' && setEdit(false)}
-          />
-          <div className='task-icons'>
-            <EditIcon className={'edit-icon'} onClick={handleClick}/>
-            <DeleteIcon className={'delete-icon'} onClick={handleDelete}/>
-          </div>
-      </form>
+    <TaskWrapper isEdit={isEdit}>
+        <form onSubmit={handleSubmit}>
+          {!isEdit ? <p>{text}</p> : 
+          <FocusInput
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onBlur={() => setIsEdit(false)}
+          />}
+        </form>
+        <div className='task-icons'>
+            <EditIcon className={'edit-icon'} onClick={() => setIsEdit(true)}/>
+            <DeleteIcon className={'delete-icon'}/>
+        </div>
     </TaskWrapper>
   );
 

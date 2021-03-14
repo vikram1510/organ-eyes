@@ -8,7 +8,6 @@
     }
   },
   "rules": {
-    "brace-style": "error",
     "camelcase": ["error", { "properties": "never" }],
     "comma-dangle": ["error", "never"],
     "func-call-spacing": ["error", "never"],
@@ -24,5 +23,6 @@
     "semi": [ "error", "always" ],
     "react/prop-types": [ 0 ],
     "indent": "off"
-  }
+  },
+  "ignorePatterns": ["src/graphql/generated.ts"]
 }
