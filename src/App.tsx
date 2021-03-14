@@ -3,6 +3,7 @@ import './App.css';
 import { getLists, ListResponse } from './api';
 import styled from 'styled-components';
 import List from './components/List';
+import { gql, useQuery } from '@apollo/client';
 
 const Page = styled.div`
   display: flex;
@@ -13,27 +14,26 @@ const Page = styled.div`
   padding: 24px;
 `;
 
-export const ListContext = createContext<{ lists: ListResponse[], setLists:Dispatch<SetStateAction<ListResponse[]>> }>({ lists: [], setLists: () => console.log('uninitialised context') });
+// export const ListContext = createContext<{ lists: ListResponse[], setLists:Dispatch<SetStateAction<ListResponse[]>> }>({ lists: [], setLists: () => console.log('uninitialised context') });
+
 
 
 function App() {
 
-  const [lists, setLists] = useState<ListResponse[]>([]);
+  // const { loading, error, data } = useQuery(GET_LISTS);
 
-  useEffect(() => {
-    getLists(setLists); 
-  },[]);
+  const [lists, setLists] = useState<ListResponse[]>([]);
 
   if (!lists) return null;
 
   return (
-    <ListContext.Provider value={{ lists, setLists }}>
-      <Page>
-        {lists.map(list => (
-          <List key={list.id} {...list}/>
-          ))}
-      </Page>
-    </ListContext.Provider>
+    // <ListContext.Provider value={{ lists, setLists }}>
+    <Page>
+      {lists.map(list => (
+        <List key={list.id} {...list}/>
+        ))}
+    </Page>
+    // </ListContext.Provider>
   );
 }
 
