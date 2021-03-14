@@ -1,0 +1,31 @@
+query tasks {
+  getTasks{
+    name
+  }
+}
+
+query task($taskId:Int!) {
+  getTask(id:$taskId){
+    name,
+    listId
+  }
+}
+
+mutation createTask($task: TaskCreate!){
+  createTask(taskCreate: $task){
+    id
+    name
+  }
+}
+
+mutation updateTask($taskId: Int!, $task: TaskUpdate!){
+  updateTask(id:$taskId, taskUpdate: $task){
+    name
+  }
+}
+
+mutation deleteTask($taskId: Int!){
+  deleteTask(id:$taskId){
+    message
+  }
+}

@@ -1,0 +1,43 @@
+mutation updateList($listId: Int!, $list: ListUpdate!) {
+  updateList(id: $listId, listUpdate: $list) {
+    id
+    name,
+    tasks {
+      id
+      name
+    }
+  }
+}
+
+mutation createList($list: ListCreate!) {
+  createList(listCreate: $list) {
+    id
+    name,
+    tasks {
+      id
+      name
+    }
+  }
+}
+
+query lists {
+  getLists{ 
+    id
+    name
+    tasks {
+      id
+      name
+    }
+  }
+}
+
+query list($listId: Int!) {
+  getList(id:$listId){
+    id
+    name
+    tasks {
+      id
+      name
+    }
+  }
+}
