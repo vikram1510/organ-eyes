@@ -51,6 +51,7 @@ export default function Task(props: TaskProps){
 
   const [isEdit, setIsEdit] = useState(false); 
   const [text, setText] = useState(props.name);
+  
   const [updateTask] =  useUpdateTaskMutation({ 
     onCompleted: (data) => {
       setText(data.updateTask.name);

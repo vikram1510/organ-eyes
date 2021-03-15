@@ -47,15 +47,13 @@ export default function List(props: ListProps){
     }
   });
 
-  const deleteTaskFn = (taskId: number) => { deleteTask({ variables: { taskId } }); };
-
   return (
     <ListWrapper >
       <div>
         <p>{props.name}</p>
       </div>
       <div>
-        {tasks.map(task => <Task key={task.id} handleDelete={deleteTaskFn} {...task}/>)}
+        {tasks.map(task => <Task key={task.id} {...task} handleDelete={(taskId: number) => { deleteTask({ variables: { taskId } }); }}/>)}
         {isAdding ? 
         <form className='add-form' onSubmit={e => { e.preventDefault(); createTask({ variables: { task: { name: taskName, listId: props.id } } }); }}>
           <FocusInput 
