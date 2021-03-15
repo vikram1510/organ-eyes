@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import Task from './Task';
-import { List as ListProps, useCreateTaskMutation } from '../graphql/generated';
+import { List as ListProps, useCreateTaskMutation, useDeleteTaskMutation } from '../graphql/generated';
 import FocusInput from './FocusInput';
 
 const ListWrapper = styled.div`
@@ -31,16 +31,23 @@ export default function List(props: ListProps){
   const [isAdding, setIsAdding] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [tasks, setTasks] = useState(props.tasks);
-  const [createTask, { data, loading }] = useCreateTaskMutation();
 
-  useEffect(() => {
-    if (data){
-      const { createTask: { id, name } } = data;
+  const [createTask] = useCreateTaskMutation({
+    onCompleted: ({ createTask: { id, name } }) => {
       setTasks([...tasks, { id, name }]);
       setIsAdding(false);
       setTaskName('');
+    },
+    onError: console.log
+  });
+
+  const [deleteTask] = useDeleteTaskMutation({
+    onCompleted: ({ deleteTask: { deletedId } }) => {
+      setTasks(tasks.filter(task => task.id !== deletedId ));
     }
-  }, [data]);
+  });
+
+  const deleteTaskFn = (taskId: number) => { deleteTask({ variables: { taskId } }); };
 
   return (
     <ListWrapper >
@@ -48,7 +55,7 @@ export default function List(props: ListProps){
         <p>{props.name}</p>
       </div>
       <div>
-        {tasks.map(task => <Task key={task.id} {...task}/>)}
+        {tasks.map(task => <Task key={task.id} handleDelete={deleteTaskFn} {...task}/>)}
         {isAdding ? 
         <form className='add-form' onSubmit={e => { e.preventDefault(); createTask({ variables: { task: { name: taskName, listId: props.id } } }); }}>
           <FocusInput 

@@ -3,7 +3,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import React, { useEffect, useState } from 'react';
 import FocusInput from './FocusInput';
-import { Task as TaskProps, useUpdateTaskMutation } from '../graphql/generated';
+import { DeleteTaskMutationVariables, Task as TaskResponse, useUpdateTaskMutation } from '../graphql/generated';
 
 const hoverStyles = css`
     background-color: #f8ddaa;
@@ -45,11 +45,18 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
   }
 `;
 
+type TaskProps = TaskResponse & { handleDelete: (taskId: number) => void }
+
 export default function Task(props: TaskProps){
 
-  const [isEdit, setIsEdit] = useState(false);
+  const [isEdit, setIsEdit] = useState(false); 
   const [text, setText] = useState(props.name);
-  const [updateTask, { data, error }] =  useUpdateTaskMutation();
+  const [updateTask] =  useUpdateTaskMutation({ 
+    onCompleted: (data) => {
+      setText(data.updateTask.name);
+      setIsEdit(false);
+    }
+  });
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -60,16 +67,6 @@ export default function Task(props: TaskProps){
     updateTask({ variables: {  taskId: props.id, task: { name: text } } });
   };
   
-  useEffect(() => {
-    if (data){
-      setText(data.updateTask.name);
-      setIsEdit(false);
-    }
-    if (error){
-      console.log(error);
-    }
-  },[data, error]);
-
   return (
     <TaskWrapper isEdit={isEdit}>
         <form onSubmit={handleSubmit}>
@@ -82,7 +79,7 @@ export default function Task(props: TaskProps){
         </form>
         <div className='task-icons'>
             <EditIcon className={'edit-icon'} onClick={() => setIsEdit(true)}/>
-            <DeleteIcon className={'delete-icon'}/>
+            <DeleteIcon className={'delete-icon'} onClick={() => props.handleDelete(props.id)}/>
         </div>
     </TaskWrapper>
   );

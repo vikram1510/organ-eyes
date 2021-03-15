@@ -52,8 +52,9 @@ export type Task = {
   list?: Maybe<List>;
 };
 
-export type Message = {
-  __typename?: 'Message';
+export type DeleteResponse = {
+  __typename?: 'DeleteResponse';
+  deletedId: Scalars['Int'];
   message: Scalars['String'];
 };
 
@@ -79,10 +80,10 @@ export type Mutation = {
   __typename?: 'Mutation';
   createList: List;
   updateList: List;
-  deleteList: Message;
+  deleteList: DeleteResponse;
   createTask: Task;
   updateTask: Task;
-  deleteTask: Message;
+  deleteTask: DeleteResponse;
 };
 
 
@@ -249,8 +250,8 @@ export type DeleteTaskMutationVariables = Exact<{
 export type DeleteTaskMutation = (
   { __typename?: 'Mutation' }
   & { deleteTask: (
-    { __typename?: 'Message' }
-    & Pick<Message, 'message'>
+    { __typename?: 'DeleteResponse' }
+    & Pick<DeleteResponse, 'deletedId' | 'message'>
   ) }
 );
 
@@ -552,6 +553,7 @@ export type UpdateTaskMutationOptions = Apollo.BaseMutationOptions<UpdateTaskMut
 export const DeleteTaskDocument = gql`
     mutation deleteTask($taskId: Int!) {
   deleteTask(id: $taskId) {
+    deletedId
     message
   }
 }

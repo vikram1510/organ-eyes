@@ -26,6 +26,7 @@ mutation updateTask($taskId: Int!, $task: TaskUpdate!){
 
 mutation deleteTask($taskId: Int!){
   deleteTask(id:$taskId){
+    deletedId
     message
   }
 }
