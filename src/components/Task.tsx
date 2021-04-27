@@ -45,43 +45,53 @@ const TaskWrapper = styled.div<{ isEdit: boolean; }>`
   }
 `;
 
-type TaskProps = TaskResponse & { handleDelete: (taskId: number) => void; };
+type TaskProps = TaskResponse & { handleDelete?: (taskId: number) => void; };
 
 export default function Task(props: TaskProps) {
 
   const [isEdit, setIsEdit] = useState(false);
-  const [text, setText] = useState(props.name);
+  const [taskName, setTaskName] = useState(props.name);
+  const [input, setInput] = useState(props.name);
 
   const [updateTask] = useUpdateTaskMutation({
     onCompleted: (data) => {
-      setText(data.updateTask.name);
+      setInput(data.updateTask.name);
+      setTaskName(data.updateTask.name);
       setIsEdit(false);
     }
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (text === props.name) {
+    if (input === props.name) {
       setIsEdit(false);
       return;
     };
-    updateTask({ variables: { taskId: props.id, task: { name: text } } });
+    updateTask({ variables: { taskId: props.id, task: { name: input } } });
+  };
+
+  const handleCancel = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setIsEdit(false);
+      setInput(taskName);
+    }
   };
 
   return (
     <TaskWrapper isEdit={isEdit}>
-      <form data-testid='form-update-task' onSubmit={handleSubmit}>
-        {!isEdit ? <p data-testid='p-task'>{text}</p> :
+      <form data-testid='form-update-task' onSubmit={handleSubmit} >
+        {!isEdit ? <p data-testid='p-task'>{taskName}</p> :
           <FocusInput
             data-testid='input-task'
-            value={text}
-            onChange={e => setText(e.target.value)}
+            value={input}
+            onChange={e => setInput(e.target.value)}
             onBlur={() => setIsEdit(false)}
+            onKeyDown={handleCancel}
           />}
       </form>
       <div className='task-icons'>
         <EditIcon data-testid={'edit-icon'} className={'edit-icon'} onClick={() => setIsEdit(true)} />
-        <DeleteIcon data-testid={'delete-icon'} className={'delete-icon'} onClick={() => props.handleDelete(props.id)} />
+        <DeleteIcon data-testid={'delete-icon'} className={'delete-icon'} onClick={() => { if (props.handleDelete) props.handleDelete(props.id); }} />
       </div>
     </TaskWrapper>
   );
