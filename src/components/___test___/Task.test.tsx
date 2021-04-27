@@ -5,7 +5,7 @@ import Task from '../Task';
 import { UpdateTaskDocument } from '../../graphql/generated';
 import { act } from 'react-dom/test-utils';
 
-test('renders Task', () => {
+test('render Task component', () => {
 
   const wrapper = render(
     <MockedProvider>
@@ -20,7 +20,7 @@ test('renders Task', () => {
   expect(taskName).toHaveTextContent('pen');
 });
 
-test('can update a Task', async () => {
+test('update task', async () => {
 
   const updateTaskMock = {
     request: {
@@ -59,7 +59,7 @@ test('can update a Task', async () => {
 
 });
 
-test('delete Task', () => {
+test('delete task', () => {
 
   const handleDelete = jest.fn();
   const wrapper = render(
