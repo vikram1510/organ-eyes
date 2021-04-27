@@ -1,9 +1,9 @@
 import styled, { css } from 'styled-components';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import FocusInput from './FocusInput';
-import { DeleteTaskMutationVariables, Task as TaskResponse, useUpdateTaskMutation } from '../graphql/generated';
+import { Task as TaskResponse, useUpdateTaskMutation } from '../graphql/generated';
 
 const hoverStyles = css`
     background-color: #f8ddaa;
@@ -19,6 +19,10 @@ const TaskWrapper = styled.div<{ isEdit: boolean; }>`
   ${props => props.isEdit && hoverStyles}
 
   svg { visibility: hidden }
+
+  :focus {
+    outline: none;
+  }
 
   :hover  {
     ${hoverStyles}
@@ -52,6 +56,7 @@ export default function Task(props: TaskProps) {
   const [isEdit, setIsEdit] = useState(false);
   const [taskName, setTaskName] = useState(props.name);
   const [input, setInput] = useState(props.name);
+  const taskRef = useRef<HTMLDivElement>(null);
 
   const [updateTask] = useUpdateTaskMutation({
     onCompleted: (data) => {
@@ -70,25 +75,47 @@ export default function Task(props: TaskProps) {
     updateTask({ variables: { taskId: props.id, task: { name: input } } });
   };
 
-  const handleCancel = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      setIsEdit(false);
-      setInput(taskName);
+  // Keyboard controls on hover
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    console.log('key', props.name, e.key);
+    if (isEdit) {
+      switch (e.key) {
+        case 'Escape':
+          setIsEdit(false);
+          setInput(taskName);
+          break;
+
+      }
+    } else {
+      switch (e.key) {
+        case 'e':
+          console.log('ok');
+          setIsEdit(true);
+          break;
+      }
+    }
+  };
+
+  const handleMouseOver = () => {
+    if (taskRef.current) {
+      const input = taskRef.current.querySelector('input');
+      if (!input) {
+        taskRef.current.focus();
+      }
     }
   };
 
   return (
-    <TaskWrapper isEdit={isEdit}>
-      <form data-testid='form-update-task' onSubmit={handleSubmit} >
-        {!isEdit ? <p data-testid='p-task'>{taskName}</p> :
+    <TaskWrapper isEdit={isEdit} ref={taskRef} tabIndex={-1} onMouseOver={handleMouseOver} onKeyUp={handleKeyDown}>
+      {!isEdit ? <p data-testid='p-task'>{taskName}</p> :
+        <form data-testid='form-update-task' onSubmit={handleSubmit}>
           <FocusInput
             data-testid='input-task'
             value={input}
             onChange={e => setInput(e.target.value)}
-            onBlur={() => setIsEdit(false)}
-            onKeyDown={handleCancel}
-          />}
-      </form>
+          />
+        </form>
+      }
       <div className='task-icons'>
         <EditIcon data-testid={'edit-icon'} className={'edit-icon'} onClick={() => setIsEdit(true)} />
         <DeleteIcon data-testid={'delete-icon'} className={'delete-icon'} onClick={() => { if (props.handleDelete) props.handleDelete(props.id); }} />

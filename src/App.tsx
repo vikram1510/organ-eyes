@@ -7,9 +7,6 @@ import { useListsQuery } from './graphql/generated';
 const Page = styled.div`
   display: flex;
   align-items: flex-start;
-  height: 100vh;
-  width: 100vw;
-  background-color: #202020;
   padding: 24px;
 `;
 
@@ -23,8 +20,8 @@ function App() {
   return (
     <Page>
       {data?.getLists.map(list => (
-        <List key={list.id} {...list}/>
-        ))}
+        <List key={list.id} {...list} />
+      ))}
     </Page>
   );
 }

@@ -112,7 +112,7 @@ test('cancel on ESC', async () => {
   input = wrapper.getByTestId('input-task');
 
   fireEvent.change(wrapper.getByTestId('input-task'), { target: { value: 'whatever' } });
-  fireEvent.keyDown(input, {
+  fireEvent.keyUp(input, {
     key: 'Escape',
     code: 'Escape',
     keyCode: 27,
