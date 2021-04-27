@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, getByTestId, render, screen } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { MockedProvider } from '@apollo/client/testing';
 import Task from '../Task';
 import { UpdateTaskDocument } from '../../graphql/generated';
@@ -58,4 +58,19 @@ test('can update a Task', async () => {
   expect(getInput()).toBeNull();
   expect(wrapper.getByTestId('p-task')).toHaveTextContent('lol');
 
+});
+
+test('delete Task', () => {
+
+  const handleDelete = jest.fn();
+  const wrapper = render(
+    <MockedProvider mocks={[]} addTypename={false}>
+      <Task id={1} name={'pen'} handleDelete={handleDelete} />
+    </MockedProvider>
+  );
+
+  const deleteIcon = wrapper.getByTestId('delete-icon');
+  fireEvent.click(deleteIcon);
+
+  expect(handleDelete).toBeCalledWith(1);
 });

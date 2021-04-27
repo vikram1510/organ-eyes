@@ -81,7 +81,7 @@ export default function Task(props: TaskProps) {
       </form>
       <div className='task-icons'>
         <EditIcon data-testid={'edit-icon'} className={'edit-icon'} onClick={() => setIsEdit(true)} />
-        <DeleteIcon className={'delete-icon'} onClick={() => props.handleDelete(props.id)} />
+        <DeleteIcon data-testid={'delete-icon'} className={'delete-icon'} onClick={() => props.handleDelete(props.id)} />
       </div>
     </TaskWrapper>
   );
