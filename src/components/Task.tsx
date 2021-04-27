@@ -10,7 +10,7 @@ const hoverStyles = css`
     border: 2px solid #a5a5a5;
 `;
 
-const TaskWrapper = styled.div<{ isEdit: boolean }>`
+const TaskWrapper = styled.div<{ isEdit: boolean; }>`
   background-color: wheat;
   border: 2px solid wheat;
   padding: 12px;
@@ -22,7 +22,7 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
 
   :hover  {
     ${hoverStyles}
-    svg { visibility: ${({ isEdit }) => isEdit ? 'hidden' : 'visible'  }; }
+    svg { visibility: ${({ isEdit }) => isEdit ? 'hidden' : 'visible'}; }
   }
 
   .task-icons {
@@ -45,43 +45,44 @@ const TaskWrapper = styled.div<{ isEdit: boolean }>`
   }
 `;
 
-type TaskProps = TaskResponse & { handleDelete: (taskId: number) => void }
+type TaskProps = TaskResponse & { handleDelete: (taskId: number) => void; };
 
-export default function Task(props: TaskProps){
+export default function Task(props: TaskProps) {
 
-  const [isEdit, setIsEdit] = useState(false); 
+  const [isEdit, setIsEdit] = useState(false);
   const [text, setText] = useState(props.name);
-  
-  const [updateTask] =  useUpdateTaskMutation({ 
+
+  const [updateTask] = useUpdateTaskMutation({
     onCompleted: (data) => {
       setText(data.updateTask.name);
       setIsEdit(false);
     }
   });
-  
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (text === props.name) {
       setIsEdit(false);
       return;
     };
-    updateTask({ variables: {  taskId: props.id, task: { name: text } } });
+    updateTask({ variables: { taskId: props.id, task: { name: text } } });
   };
-  
+
   return (
     <TaskWrapper isEdit={isEdit}>
-        <form onSubmit={handleSubmit}>
-          {!isEdit ? <p>{text}</p> : 
+      <form data-testid='form-update-task' onSubmit={handleSubmit}>
+        {!isEdit ? <p data-testid='p-task'>{text}</p> :
           <FocusInput
+            data-testid='input-task'
             value={text}
             onChange={e => setText(e.target.value)}
             onBlur={() => setIsEdit(false)}
           />}
-        </form>
-        <div className='task-icons'>
-            <EditIcon className={'edit-icon'} onClick={() => setIsEdit(true)}/>
-            <DeleteIcon className={'delete-icon'} onClick={() => props.handleDelete(props.id)}/>
-        </div>
+      </form>
+      <div className='task-icons'>
+        <EditIcon data-testid={'edit-icon'} className={'edit-icon'} onClick={() => setIsEdit(true)} />
+        <DeleteIcon className={'delete-icon'} onClick={() => props.handleDelete(props.id)} />
+      </div>
     </TaskWrapper>
   );
 
