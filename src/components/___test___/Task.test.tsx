@@ -5,11 +5,10 @@ import Task from '../Task';
 import { UpdateTaskDocument } from '../../graphql/generated';
 import { act } from 'react-dom/test-utils';
 
-
 test('renders Task', () => {
 
   const wrapper = render(
-    <MockedProvider mocks={[]}>
+    <MockedProvider>
       <Task id={1} name={'pen'} handleDelete={() => console.log('delete')} />
     </MockedProvider>
   );
@@ -34,7 +33,7 @@ test('can update a Task', async () => {
   };
 
   const wrapper = render(
-    <MockedProvider mocks={[updateTaskMock]} addTypename={false}>
+    <MockedProvider mocks={[updateTaskMock]}>
       <Task id={1} name={'pen'} handleDelete={() => console.log('delete')} />
     </MockedProvider>
   );
@@ -64,7 +63,7 @@ test('delete Task', () => {
 
   const handleDelete = jest.fn();
   const wrapper = render(
-    <MockedProvider mocks={[]} addTypename={false}>
+    <MockedProvider addTypename={false}>
       <Task id={1} name={'pen'} handleDelete={handleDelete} />
     </MockedProvider>
   );
